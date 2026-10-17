@@ -5,7 +5,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
@@ -47,85 +46,46 @@ public final class ProbeTests {
 		helper.runAfterDelay(2 + count * gap + 20, done);
 	}
 
-	/** TNT pushed by a piston while powered without having been updated; the dust in front pops and updates it. */
-	public static void tnt(GameTestHelper helper) {
-		floor(helper);
-		helper.setBlock(new BlockPos(1, 1, 3), piston(Blocks.PISTON, Direction.EAST));
-		helper.setBlock(new BlockPos(2, 1, 3), Blocks.TNT);
-		helper.setBlock(new BlockPos(3, 1, 3), Blocks.REDSTONE_WIRE);
-		helper.getLevel().setBlock(helper.absolutePos(new BlockPos(2, 2, 3)), Blocks.REDSTONE_BLOCK.defaultBlockState(), 2);
-		helper.runAfterDelay(2, () -> helper.setBlock(new BlockPos(0, 1, 3), Blocks.REDSTONE_BLOCK));
-		helper.runAfterDelay(10, () -> {
-			var primed = helper.getLevel().getEntitiesOfClass(PrimedTnt.class, DupeTests.area(helper));
-			log(helper, "tnt: primed=" + primed.size() + " blocks=" + blocks(helper, Blocks.TNT));
-			primed.forEach(e -> e.discard());
-			helper.succeed();
-		});
-	}
-
-	/** Wiki carpet duper: sticky piston, two slime blocks, carpet. Variant a: carpet on the piston. */
-	public static void carpetA(GameTestHelper helper) {
-		carpet(helper, true, Blocks.RED_CARPET, Items.RED_CARPET, "carpetA");
-	}
-
-	public static void carpetB(GameTestHelper helper) {
-		carpet(helper, false, Blocks.RED_CARPET, Items.RED_CARPET, "carpetB");
-	}
-
-	public static void railA(GameTestHelper helper) {
-		carpet(helper, true, Blocks.RAIL, Items.RAIL, "railA");
-	}
-
-	public static void railB(GameTestHelper helper) {
-		carpet(helper, false, Blocks.RAIL, Items.RAIL, "railB");
-	}
-
-	static void carpet(GameTestHelper helper, boolean onPiston, Block block, Item item, String name) {
-		floor(helper);
-		// bottom row at z=3: x=1 observer-ish filler (stone), x=2 smooth stone, x=3 slime, x=4 sticky piston facing west
-		helper.setBlock(new BlockPos(2, 1, 3), Blocks.SMOOTH_STONE);
-		helper.setBlock(new BlockPos(3, 1, 3), Blocks.SLIME_BLOCK);
-		helper.setBlock(new BlockPos(4, 1, 3), piston(Blocks.STICKY_PISTON, Direction.WEST));
-		helper.setBlock(new BlockPos(3, 2, 3), Blocks.SLIME_BLOCK);
-		helper.setBlock(onPiston ? new BlockPos(4, 2, 3) : new BlockPos(3, 3, 3), block);
-		int before = blocks(helper, block);
-		StringBuilder trace = new StringBuilder();
-		for (int t = 0; t < 40; t++) {
-			int tick = t;
-			helper.runAfterDelay(t, () -> trace.append(blocks(helper, block)).append(','));
-		}
-		pulses(helper, new BlockPos(5, 1, 3), 4, 8, 1, () -> {
-			int items = 0;
-			for (ItemEntity e : helper.getLevel().getEntitiesOfClass(ItemEntity.class, DupeTests.area(helper).inflate(4)))
-				if (e.getItem().is(item)) items += e.getItem().getCount();
-			log(helper, name + ": before=" + before + " blocks=" + blocks(helper, block) + " items=" + items + " trace=" + trace);
-			helper.succeed();
-		});
-	}
-
-	/** Sand landing inside an end portal in the same tick it enters it. */
+	/** Sand that lands half over an end portal: its box touches the portal while its block position is beside it. */
 	public static void gravity(GameTestHelper helper) {
 		floor(helper);
-		StringBuilder out = new StringBuilder();
-		double[] dys = {-0.3, -0.6, -1.0, -1.5};
-		for (int i = 0; i < dys.length; i++) {
-			BlockPos portal = new BlockPos(1 + i * 2, 1, 3);
-			helper.setBlock(portal, Blocks.END_PORTAL);
-		}
+		double[] xs = {2.05, 2.2, 2.4, 2.45};
+		for (int i = 0; i < xs.length; i++) helper.setBlock(new BlockPos(1, 1, 1 + i * 2), Blocks.END_PORTAL);
+		StringBuilder trace = new StringBuilder();
 		helper.runAfterDelay(2, () -> {
-			for (int i = 0; i < dys.length; i++) {
-				Vec3 at = helper.absoluteVec(new Vec3(1.5 + i * 2, 2.1, 3.5));
-				FallingBlockEntity sand = FallingBlockEntity.fall(helper.getLevel(), helper.absolutePos(new BlockPos(1 + i * 2, 5, 3)), Blocks.SAND.defaultBlockState());
+			for (int i = 0; i < xs.length; i++) {
+				Vec3 at = helper.absoluteVec(new Vec3(xs[i], 2.1, 1.5 + i * 2));
+				FallingBlockEntity sand = FallingBlockEntity.fall(helper.getLevel(), helper.absolutePos(new BlockPos(5, 5, 1 + i * 2)), Blocks.SAND.defaultBlockState());
 				sand.setPos(at.x, at.y, at.z);
-				sand.setDeltaMovement(0, dys[i], 0);
+				sand.setDeltaMovement(0, -1.5, 0);
 			}
 		});
-		helper.runAfterDelay(30, () -> {
+		for (int t = 3; t < 12; t++) helper.runAfterDelay(t, () -> {
 			int items = 0;
 			for (ItemEntity e : helper.getLevel().getEntitiesOfClass(ItemEntity.class, DupeTests.area(helper)))
 				if (e.getItem().is(Items.SAND)) items += e.getItem().getCount();
-			int falling = helper.getLevel().getEntitiesOfClass(FallingBlockEntity.class, DupeTests.area(helper)).size();
-			log(helper, "gravity: overworld sand items=" + items + " blocks=" + blocks(helper, Blocks.SAND) + " falling=" + falling);
+			trace.append(blocks(helper, Blocks.SAND)).append('/').append(items).append('/')
+				.append(helper.getLevel().getEntitiesOfClass(FallingBlockEntity.class, DupeTests.area(helper)).size()).append(' ');
+		});
+		helper.runAfterDelay(14, () -> {
+			var end = helper.getLevel().getServer().getLevel(net.minecraft.world.level.Level.END);
+			int inEnd = end == null ? -1 : end.getEntitiesOfClass(FallingBlockEntity.class, new net.minecraft.world.phys.AABB(-300, -64, -300, 300, 320, 300)).size();
+			log(helper, "gravity: blocks/items/falling per tick " + trace + " falling in end=" + inEnd);
+			helper.succeed();
+		});
+	}
+
+	/** /give next to a hopper minecart, which ticks before the display item expires. */
+	public static void giveMinecart(GameTestHelper helper) {
+		floor(helper);
+		var cart = helper.spawn(net.minecraft.world.entity.EntityType.HOPPER_MINECART, new BlockPos(1, 1, 1));
+		var player = DupeTests.player(helper, "test-cart", true);
+		var server = helper.getLevel().getServer();
+		helper.runAfterDelay(2, () -> server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withEntity(player).withSuppressedOutput(), "give @s minecraft:stick 1"));
+		helper.runAfterDelay(8, () -> {
+			log(helper, "give_minecart: player=" + DupeTests.count(player.getInventory(), Items.STICK) + " cart=" + DupeTests.count((net.minecraft.world.Container) cart, Items.STICK));
+			DupeTests.leave(helper, player);
+			cart.discard();
 			helper.succeed();
 		});
 	}

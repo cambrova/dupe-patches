@@ -46,12 +46,8 @@ public final class DupeTests {
 		pair("trident", DupeTests::trident);
 		pair("book", DupeTests::book);
 		pair("give_hopper", DupeTests::giveHopper);
-		TESTS.put("probe_tnt", ProbeTests::tnt);
-		TESTS.put("probe_carpet_a", ProbeTests::carpetA);
-		TESTS.put("probe_carpet_b", ProbeTests::carpetB);
-		TESTS.put("probe_rail_a", ProbeTests::railA);
-		TESTS.put("probe_rail_b", ProbeTests::railB);
 		TESTS.put("probe_gravity", ProbeTests::gravity);
+		TESTS.put("probe_give_minecart", ProbeTests::giveMinecart);
 	}
 
 	private DupeTests() {
@@ -156,7 +152,7 @@ public final class DupeTests {
 				helper.assertTrue(!moved, "the charged trident was moved");
 				helper.assertTrue(total == 1, "with the patch there are " + total + " tridents (" + held + " held, " + thrown + " thrown)");
 			}
-			//? if >=26 {
+			//? if >=1.21.11 {
 			/*else helper.assertTrue(total == 1, "vanilla now duplicates the trident again: " + total);
 			*///?} else
 			else helper.assertTrue(moved && total == 2, "vanilla did not duplicate the trident: moved=" + moved + ", " + held + " held, " + thrown + " thrown");
