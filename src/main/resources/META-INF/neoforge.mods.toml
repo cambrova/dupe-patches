@@ -1,0 +1,30 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "CC0-1.0"
+issueTrackerURL = "https://github.com/traelmyx/dupe-patches/issues"
+
+[[mods]]
+modId = "${id}"
+version = "${version}"
+displayName = "${name}"
+authors = "traelmyx (port), TreeOfSelf (Panda Anti-Dupe)"
+${logo_key} = "assets/dupepatches/icon.png"
+displayTest = "IGNORE_ALL_VERSION"
+description = '''Closes item duplication glitches that still work in vanilla, each with its own switch. NeoForge port of Panda Anti-Dupe by TreeOfSelf.'''
+
+[[mixins]]
+config = "dupepatches.mixins.json"
+
+[[dependencies.${id}]]
+modId = "neoforge"
+type = "required"
+versionRange = "[${neoforge_major},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${id}]]
+modId = "minecraft"
+type = "required"
+versionRange = "${mc_dep}"
+ordering = "NONE"
+side = "BOTH"

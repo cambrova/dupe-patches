@@ -1,0 +1,15 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "io.github.traelmyx.dupepatches.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"AbstractContainerMenuMixin",
+		"HopperBlockEntityMixin",
+		"ItemEntityAccessor",
+		"ServerGamePacketListenerImplMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

@@ -1,0 +1,15 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "CC0-1.0"
+
+[[mods]]
+modId = "${id}_gametest"
+version = "${version}"
+displayName = "Dupe Patches GameTests"
+
+[[dependencies.${id}_gametest]]
+modId = "${id}"
+type = "required"
+versionRange = "*"
+ordering = "AFTER"
+side = "BOTH"

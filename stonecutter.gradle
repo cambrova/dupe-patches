@@ -1,0 +1,24 @@
+plugins {
+	id 'dev.kikugie.stonecutter'
+	id 'net.neoforged.moddev' apply false
+}
+
+stonecutter.active '1.21.1-neoforge'
+
+stonecutter.parameters {
+	def loader = node.metadata.project.substring(node.metadata.project.lastIndexOf('-') + 1)
+	constants.match(loader, 'neoforge')
+}
+
+tasks.register('buildAll') {
+	group = 'verification'
+	dependsOn stonecutter.tasks.named('build', null)
+}
+tasks.register('gameTestAll') {
+	group = 'verification'
+	dependsOn stonecutter.tasks.named('runGameTest', null)
+}
+tasks.register('clientGameTestAll') {
+	group = 'verification'
+	dependsOn stonecutter.tasks.named('runProductionClientGameTest', null)
+}
