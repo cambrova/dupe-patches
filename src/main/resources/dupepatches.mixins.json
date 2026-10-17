@@ -5,8 +5,7 @@
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
 		"AbstractContainerMenuMixin",
-		"HopperBlockEntityMixin",
-		"ItemEntityAccessor",
+		"FallingBlockEntityMixin",
 		"ServerGamePacketListenerImplMixin"
 	],
 	"injectors": {

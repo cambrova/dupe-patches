@@ -32,8 +32,8 @@ public final class DupePatches {
 		"Moving a trident out of your inventory while charging it, then throwing it, kept a copy in the container.");
 	public static final Patch BOOK = patch("book", true,
 		"Signing a book with a title over 32 characters made the player impossible to save, so they rolled back on relog.");
-	public static final Patch GIVE_HOPPER = patch("giveHopper", true,
-		"Hoppers could catch the display-only item that /give drops, giving one extra item.");
+	public static final Patch GRAVITY_BLOCK = patch("gravityBlock", false,
+		"Sand, gravel, concrete powder and other falling blocks that go through an end portal also land where they left. Vanilla keeps this on purpose and sand dupers rely on it, so it's off by default.");
 
 	/** Players, entities and block positions the game tests keep on vanilla behaviour, to show each patch matters. */
 	public static final Set<Object> VANILLA = ConcurrentHashMap.newKeySet();

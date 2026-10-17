@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -45,9 +46,7 @@ public final class DupeTests {
 	static {
 		pair("trident", DupeTests::trident);
 		pair("book", DupeTests::book);
-		pair("give_hopper", DupeTests::giveHopper);
-		TESTS.put("probe_gravity", ProbeTests::gravity);
-		TESTS.put("probe_give_minecart", ProbeTests::giveMinecart);
+		pair("gravity_block", DupeTests::gravityBlock);
 	}
 
 	private DupeTests() {
@@ -194,25 +193,34 @@ public final class DupeTests {
 		//?}
 	}
 
-	// /give into a hopper: the display-only copy that /give drops ends up in the hopper
+	// Sand: falling half over an end portal, so it touches the portal while its block position is beside it
 
-	private static void giveHopper(GameTestHelper helper, boolean on) {
+	private static void gravityBlock(GameTestHelper helper, boolean on) {
+		// Off by default; switched on here, and the control opts its own sand out
+		DupePatches.GRAVITY_BLOCK.enabled = true;
 		floor(helper);
-		BlockPos hopperAt = new BlockPos(1, 1, 1);
-		helper.setBlock(hopperAt, Blocks.HOPPER);
-		vanillaAt(helper, hopperAt, on);
-		ServerPlayer player = player(helper, on ? "test-give" : "test-give-v", on);
-		MinecraftServer server = helper.getLevel().getServer();
-		server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withEntity(player).withSuppressedOutput(),
-			"give @s minecraft:stick 1");
-		helper.runAfterDelay(5, () -> {
-			int inPlayer = count(player.getInventory(), Items.STICK);
-			int inHopper = count((Container) helper.getLevel().getBlockEntity(helper.absolutePos(hopperAt)), Items.STICK);
-			leave(helper, player);
-			DupePatches.VANILLA.remove(helper.absolutePos(hopperAt));
-			helper.assertTrue(inPlayer == 1, "the player got " + inPlayer + " sticks");
-			if (on) helper.assertTrue(inHopper == 0, "the hopper caught the /give display item");
-			else helper.assertTrue(inHopper == 1, "the vanilla hopper did not catch the /give display item");
+		double[] xs = {2.05, 2.2, 2.4};
+		java.util.List<FallingBlockEntity> sand = new java.util.ArrayList<>();
+		for (int i = 0; i < xs.length; i++) helper.setBlock(new BlockPos(1, 1, 1 + i * 2), Blocks.END_PORTAL);
+		helper.runAfterDelay(2, () -> {
+			for (int i = 0; i < xs.length; i++) {
+				Vec3 at = helper.absoluteVec(new Vec3(xs[i], 2.1, 1.5 + i * 2));
+				FallingBlockEntity entity = FallingBlockEntity.fall(helper.getLevel(), helper.absolutePos(new BlockPos(5, 5, 1 + i * 2)), Blocks.SAND.defaultBlockState());
+				if (!on) DupePatches.VANILLA.add(entity.getUUID());
+				entity.setPos(at.x, at.y, at.z);
+				entity.setDeltaMovement(0, -1.5, 0);
+				sand.add(entity);
+			}
+		});
+		helper.runAfterDelay(8, () -> {
+			sand.forEach(e -> DupePatches.VANILLA.remove(e.getUUID()));
+			long through = sand.stream().filter(e -> e.getRemovalReason() == Entity.RemovalReason.CHANGED_DIMENSION).count();
+			int landed = 0;
+			for (int x = 0; x < 8; x++) for (int y = 1; y < 8; y++) for (int z = 0; z < 8; z++)
+				if (helper.getBlockState(new BlockPos(x, y, z)).is(Blocks.SAND)) landed++;
+			helper.assertTrue(through == xs.length, "only " + through + " of " + xs.length + " sand blocks went through the portal");
+			if (on) helper.assertTrue(landed == 0, landed + " sand blocks also landed in the overworld");
+			else helper.assertTrue(landed == xs.length, "vanilla landed " + landed + " of " + xs.length + " sand blocks in the overworld too");
 			helper.succeed();
 		});
 	}
