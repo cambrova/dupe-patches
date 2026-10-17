@@ -18,7 +18,7 @@ public abstract class ServerGamePacketListenerImplMixin {
 	public ServerPlayer player;
 
 	/**
-	 * Book dupe: a modified client can sign a book with a title of up to 128 characters, but a written book's title
+	 * Book dupe (1.21.1): a modified client can sign a book with a title of up to 128 characters, but a written book's title
 	 * can only be saved up to 32. The player then can't be saved at all and rolls back to their last save on relog,
 	 * while anything they put in a chest stays there. Titles that couldn't be saved are refused.
 	 */

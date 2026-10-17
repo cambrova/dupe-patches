@@ -147,14 +147,15 @@ public final class DupeTests {
 				.filter(t -> t.getOwner() == player).toList().size();
 			leave(helper, player);
 			int total = held + thrown;
+			//? if >=1.21.11 {
+			/*// Fixed by Mojang: releasing the trident uses up the charged stack wherever it is, so nothing to patch
+			helper.assertTrue(total == 1, "the trident was duplicated: " + held + " held, " + thrown + " thrown");
+			*///?} else {
 			if (on) {
 				helper.assertTrue(!moved, "the charged trident was moved");
 				helper.assertTrue(total == 1, "with the patch there are " + total + " tridents (" + held + " held, " + thrown + " thrown)");
-			}
-			//? if >=1.21.11 {
-			/*else helper.assertTrue(total == 1, "vanilla now duplicates the trident again: " + total);
-			*///?} else
-			else helper.assertTrue(moved && total == 2, "vanilla did not duplicate the trident: moved=" + moved + ", " + held + " held, " + thrown + " thrown");
+			} else helper.assertTrue(moved && total == 2, "vanilla did not duplicate the trident: moved=" + moved + ", " + held + " held, " + thrown + " thrown");
+			//?}
 			helper.succeed();
 		});
 	}

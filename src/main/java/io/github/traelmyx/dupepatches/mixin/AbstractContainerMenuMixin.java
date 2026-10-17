@@ -16,7 +16,7 @@ import net.minecraft.world.inventory.ClickType;
 @Mixin(AbstractContainerMenu.class)
 public abstract class AbstractContainerMenuMixin {
 	/**
-	 * Trident dupe: while a trident is being charged, a swap click can move that same item into a container. On
+	 * Trident dupe (1.21.1): while a trident is being charged, a swap click can move that same item into a container. On
 	 * release the game throws a copy and then fails to find the original in the player's inventory, so it stays
 	 * in the container. Clicks are ignored while charging a trident; the client gets the real slots back.
 	 */

@@ -28,10 +28,16 @@ public final class DupePatches {
 	/** Patch switches, in config file order. Item and inventory dupes default on; farm dupes default off. */
 	public static final Map<String, Patch> PATCHES = new LinkedHashMap<>();
 
+	// The trident and book dupes only work on 1.21.1; vanilla 1.21.11 and 26.x already prevent both, so they are not patched there.
+	//? if <1.21.11 {
 	public static final Patch TRIDENT = patch("trident", true,
-		"Moving a trident out of your inventory while charging it, then throwing it, kept a copy in the container.");
+		"Moving a trident into the crafting grid or a container while charging it, then throwing it, kept a copy.");
 	public static final Patch BOOK = patch("book", true,
 		"Signing a book with a title over 32 characters made the player impossible to save, so they rolled back on relog.");
+	//?} else {
+	/*public static final Patch TRIDENT = new Patch("trident", false, "");
+	public static final Patch BOOK = new Patch("book", false, "");
+	*///?}
 	public static final Patch GRAVITY_BLOCK = patch("gravityBlock", false,
 		"Sand, gravel, concrete powder and other falling blocks that go through an end portal also land where they left. Vanilla keeps this on purpose and sand dupers rely on it, so it's off by default.");
 
