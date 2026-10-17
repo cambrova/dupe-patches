@@ -13,7 +13,6 @@ import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -25,6 +24,10 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+//? if >=1.21.11 {
+/*import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
+*///?} else
+import net.minecraft.world.entity.projectile.ThrownTrident;
 //? if >=26 {
 /*import net.minecraft.world.inventory.ContainerInput;
 *///?} else
@@ -43,6 +46,12 @@ public final class DupeTests {
 		pair("trident", DupeTests::trident);
 		pair("book", DupeTests::book);
 		pair("give_hopper", DupeTests::giveHopper);
+		TESTS.put("probe_tnt", ProbeTests::tnt);
+		TESTS.put("probe_carpet_a", ProbeTests::carpetA);
+		TESTS.put("probe_carpet_b", ProbeTests::carpetB);
+		TESTS.put("probe_rail_a", ProbeTests::railA);
+		TESTS.put("probe_rail_b", ProbeTests::railB);
+		TESTS.put("probe_gravity", ProbeTests::gravity);
 	}
 
 	private DupeTests() {
@@ -124,7 +133,7 @@ public final class DupeTests {
 		floor(helper);
 		ServerPlayer player = player(helper, on ? "test-trident" : "test-trident-v", on);
 		player.getInventory().setItem(0, new ItemStack(Items.TRIDENT));
-		//? if >=26 {
+		//? if >=1.21.11 {
 		/*player.getInventory().setSelectedSlot(0);
 		*///?} else
 		player.getInventory().selected = 0;
@@ -198,11 +207,11 @@ public final class DupeTests {
 		vanillaAt(helper, hopperAt, on);
 		ServerPlayer player = player(helper, on ? "test-give" : "test-give-v", on);
 		MinecraftServer server = helper.getLevel().getServer();
-		server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(),
-			"give " + player.getStringUUID() + " minecraft:stick 1");
+		server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withEntity(player).withSuppressedOutput(),
+			"give @s minecraft:stick 1");
 		helper.runAfterDelay(5, () -> {
 			int inPlayer = count(player.getInventory(), Items.STICK);
-			int inHopper = count((Container) helper.getBlockEntity(hopperAt), Items.STICK);
+			int inHopper = count((Container) helper.getLevel().getBlockEntity(helper.absolutePos(hopperAt)), Items.STICK);
 			leave(helper, player);
 			DupePatches.VANILLA.remove(helper.absolutePos(hopperAt));
 			helper.assertTrue(inPlayer == 1, "the player got " + inPlayer + " sticks");
